@@ -128,6 +128,15 @@ lehrer = {
 }
 
 
+# Stundenplan: [Start[Hour, Minute], End[...], BreakStart[...], BreakEnd[...]]
+times = {
+  "Montag": [[7, 25], [15, 15]],
+  "Dienstag": [[8, 20], [12, 50]],
+  "Mittwoch": [[7, 25], [14, 50], [9, 50], [12, 5]],
+  "Donnerstag": [[7, 25], [12, 50], [9, 50], [12, 5]],
+  "Freitag": [[8, 20], [12, 50]]
+}
+
 def download_pdf(url, filename):
     if os.path.exists(filename):
         os.remove(filename)
@@ -178,33 +187,32 @@ def decide_pdf():
     
     selected_pdf = None
 
-    # Zeiten:
-    # Montag: 7:25 - 15:15
-    # Dienstag: 8:20 - 12:50
-    # Mittwoch: 7:25 - 14:50 + Pause: 9:50 - 12:05
-    # Donnerstag: 7:25 - 12:50 + Pause: 9:50 - 12:05
-    # Freitag: 8:20 - 12:50
+    dayEndHour = times[current_weekday][1][0]
+    dayEndMinute = times[current_weekday][1][1]
 
-    if current_weekday in ["Montag", "Mittwoch"]:
-        if hour < 15 or (hour == 15):
+    # * montag - freitag
+    if current_weekday in ["Montag", "Dienstag", "Mittwoch", "Donnerstag"]:
+        # vor schluss
+        if hour < dayEndHour or (hour == dayEndHour and minute < dayEndMinute):
             selected_pdf = get_pdf_for_today(current_weekday, pdf_days)
+        # nach schluss
         else:
             selected_pdf = get_pdf_for_next_day(current_weekday, pdf_days)
-    elif current_weekday in ["Dienstag", "Donnerstag"]:
-        if hour < 12 or (hour == 12 and minute == 50):
-            selected_pdf = get_pdf_for_today(current_weekday, pdf_days)
-        else:
-            selected_pdf = get_pdf_for_next_day(current_weekday, pdf_days)
+    # * montag - freitag
     elif current_weekday == "Freitag":
-        if hour < 12 or (hour == 12 and minute <= 50):
+        # vor schluss
+        if hour < dayEndHour or (hour == dayEndHour and minute <= dayEndMinute):
             selected_pdf = get_pdf_for_today(current_weekday, pdf_days)
+        # nach schluss
         else:
             selected_pdf = get_pdf_for_today("Montag", pdf_days)
+    # * samstag - sonntag
     elif current_weekday in ["Samstag", "Sonntag"]:
         selected_pdf = get_pdf_for_today("Montag", pdf_days)
 
+    # * default / fallback if pdf is not available yet
     if selected_pdf is None:
-        selected_pdf = list(pdf_days.keys())[0]  # Fallback zur ersten PDF
+        selected_pdf = list(pdf_days.keys())[0]
 
     if os.path.exists("Vertretungsplan.pdf"):
         os.remove("Vertretungsplan.pdf")
