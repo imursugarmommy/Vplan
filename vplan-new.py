@@ -269,7 +269,7 @@ def extract_substitution_infos(pdf_path):
     # * return in json format so you can get it afterwards
     return {
         "substitutionPlan": output_prompt,
-        "weekday": weekday + ' der ' + daydate
+        "weekday": weekday + ' der ' + dayDate
     }
 
 if __name__ == "__main__":
