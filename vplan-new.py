@@ -209,6 +209,8 @@ def extract_substitution_infos(pdf_path):
     all_lines = []
     changes_count = 0
 
+    dayDate = ''
+    weekday = ''
     output_prompt = ''
 
     # * splits pdf into lines and saves it in a list
@@ -219,15 +221,12 @@ def extract_substitution_infos(pdf_path):
 
     # * goes through all lines and picks out the subjects i have saved in the faecher dict
     for line in all_lines:
-      dayDate = ''
-      weekday = ''
-
       if all_lines.index(line) == 3:
         weekday = line.split(' ')[4]
         dayDate = line.split(' ')[2]
 
       for index, (key, subject) in enumerate(faecher.items()):
-        if key in line:
+        if key in line and ' 12 ' in line:
           filtered_teachers = line.split(key)[1]
 
           new_teacher = filtered_teachers.split(" ")[2]
