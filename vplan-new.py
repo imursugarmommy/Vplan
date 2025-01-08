@@ -219,16 +219,14 @@ def extract_substitution_infos(pdf_path):
 
     # * goes through all lines and picks out the subjects i have saved in the faecher dict
     for line in all_lines:
+      dayDate = ''
+      weekday = ''
+
+      if all_lines.index(line) == 3:
+        weekday = line.split(' ')[4]
+        dayDate = line.split(' ')[2]
+
       for index, (key, subject) in enumerate(faecher.items()):
-        date_info = []
-        
-        if index == 2:
-            date_info = line.split(' ')
-
-        # [Vertretungen:, 8.1., /, Mittwoch]
-        dayDate = date_info[3]
-        weekday = date_info[1]
-
         if key in line:
           filtered_teachers = line.split(key)[1]
 
@@ -267,20 +265,6 @@ def extract_substitution_infos(pdf_path):
     # * custom message for when there is no change
     if output_prompt == '':
       output_prompt = 'Keine Stundenplanabwandlungen'
-
-    # * configure the title message containing Today's date or Tomorrow's considering the time of the day
-    # today = wochentage[datetime.now().weekday()]
-    # hour, minute = datetime.now().hour, datetime.now().minute
-
-    # wantedWeekday = today
-    # wantedDate = datetime.now().strftime('%d.%m.%Y')
-
-    # if today == 'Montag' and (hour > 15 or (hour == 15 and minute == 15)):
-    #   wantedWeekday = 'Dienstag'
-    #   wantedDate = datetime.now() + timedelta(days=1)
-    # elif (today == 'Dienstag' or today == 'Donnerstag' or today == 'Freitag') and (hour > 12 or (hour == 12 and minute == 50)):
-    #   wantedWeekday = wochentage[(wochentage.index(today) + 1) % 7]
-    #   wantedDate = datetime.now() + timedelta(days=1)
 
     # * return in json format so you can get it afterwards
     return {
