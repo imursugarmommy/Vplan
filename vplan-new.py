@@ -134,7 +134,9 @@ times = {
   "Dienstag": [[8, 20], [12, 50]],
   "Mittwoch": [[7, 25], [14, 50], [9, 50], [12, 5]],
   "Donnerstag": [[7, 25], [12, 50], [9, 50], [12, 5]],
-  "Freitag": [[8, 20], [12, 50]]
+  "Freitag": [[8, 20], [12, 50]],
+  "Samstag": [[7, 0], [7, 1]], # not real times but just so the program doesn't crash
+  "Sonntag": [[7, 0], [7, 1]]
 }
 
 def download_pdf(url, filename):
