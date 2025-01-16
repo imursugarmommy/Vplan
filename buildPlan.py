@@ -24,22 +24,6 @@ shortform_faecher = {
     "Mu": "Musik",
 }
 
-faecher = {}
-
-def create_faecher_dict():
-    if len(sys.argv) > 1:
-        user_input = sys.argv
-        user_input.pop(0)
-        user_input = user_input[0].split(" ")
-    else:
-        user_input = "No input provided"
-
-    for fach in user_input:
-        for key, value in shortform_faecher.items():
-            if key in fach:
-                faecher[fach] = value
-
-
 url = "https://www.barnim-gymnasium.de/fileadmin/schulen/barnim-gymnasium/Dokumente/Pl%C3%A4ne/splan.pdf"
 
 password = "schule"
@@ -82,6 +66,26 @@ valid_classes = [
     "12",
 ]
 
+faecher = {}
+file_path = "information.json"
+
+def create_faecher_dict():
+    if len(sys.argv) > 1:
+        user_input = sys.argv
+        user_input.pop(0)
+        user_input = user_input[0].split(" ")
+    else:
+        user_input = "No input provided"
+
+    for fach in user_input:
+        for key, value in shortform_faecher.items():
+            if key in fach:
+                faecher[fach] = value
+
+    if not os.path.exists(file_path):
+        # Create json file
+        with open(file_path, "w") as file:
+            json.dump(faecher, file, indent=4)
 
 def download_pdf(url, filename):
     response = requests.get(url)
