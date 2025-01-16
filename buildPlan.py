@@ -86,6 +86,14 @@ def create_faecher_dict():
         # Create json file
         with open(file_path, "w") as file:
             json.dump(faecher, file, indent=4)
+    else:
+        with open(file_path, "r") as file:
+            data = json.load(file)
+    
+        # Check if the key exists and the value matches
+        if not 'faecher' in data:
+            with open(file_path, "w") as file:
+                json.dump(faecher, file, indent=4) 
 
 def download_pdf(url, filename):
     response = requests.get(url)

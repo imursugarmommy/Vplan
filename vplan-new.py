@@ -31,7 +31,7 @@ faecher = {
     "GGeo5": "Geographie",
     "GBi4": "Biologie",
     "GKu1": "Kunst",
-    "GSp6t": "Sport",
+    "GSp6": "Sport",
     "GIf": "Informatik",
     "Sk Sp": "Seminarkurs Eventmanagement",
 }
