@@ -10,7 +10,6 @@ urls = [
     "https://www.barnim-gymnasium.de/fileadmin/schulen/barnim-gymnasium/Dokumente/Pl%C3%A4ne/vplan1.pdf",
 ]
 
-# Passwort für die PDFs
 password = "schule"
 
 pdf_path = "./Vertretungsplan.pdf"
@@ -23,18 +22,7 @@ wochentage = [
     "Samstag",
     "Sonntag",
 ]
-faecher = {
-    "LMa1": "Mathe",
-    "GDe6": "Deutsch",
-    "LEn3": "Englisch",
-    "GGe1": "Geschichte",
-    "GGeo5": "Geographie",
-    "GBi4": "Biologie",
-    "GKu1": "Kunst",
-    "GSp6": "Sport",
-    "GIf": "Informatik",
-    "Sk Sp": "Seminarkurs Eventmanagement",
-}
+
 lehrer = {
     "ak": "Hr. Ak",
     "kr": "Fr. Krakau",
@@ -127,6 +115,14 @@ lehrer = {
     "kra": "Hr. Kraus",
 }
 
+json_path = "information.json"
+
+faecher = {}
+if os.path.exists(json_path):
+    with open(json_path, "r") as file:
+        content = json.load(file)
+    
+    faecher = content["faecher"]
 
 # Stundenplan: [Start[Hour, Minute], End[...], BreakStart[...], BreakEnd[...]]
 times = {

@@ -82,18 +82,26 @@ def create_faecher_dict():
             if key in fach:
                 faecher[fach] = value
 
-    if not os.path.exists(file_path):
-        # Create json file
+    create_json_file(faecher)
+
+def create_json_file(faecher):
+    if not os.path.exists(file_path): # Create the file if it doesn't exist
         with open(file_path, "w") as file:
-            json.dump(faecher, file, indent=4)
-    else:
+            json.dump({'faecher': faecher}, file, indent=4)
+    else: # laod and update file if it exists
         with open(file_path, "r") as file:
-            data = json.load(file)
-    
-        # Check if the key exists and the value matches
-        if not 'faecher' in data:
-            with open(file_path, "w") as file:
-                json.dump(faecher, file, indent=4) 
+            try:
+                data = json.load(file)  # Load existing JSON data
+            except json.JSONDecodeError:
+                # If the file is empty or corrupted, initialize it
+                data = {}
+        
+        # Add or update the data under the key
+        data['faecher'] = faecher
+        
+        # Write the (updated) data back to the file
+        with open(file_path, "w") as file:
+            json.dump(data, file, indent=4)
 
 def download_pdf(url, filename):
     response = requests.get(url)
