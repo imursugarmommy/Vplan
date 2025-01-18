@@ -3,7 +3,7 @@ from PyPDF2 import PdfReader, PdfWriter
 from datetime import datetime, timedelta
 import os
 import json
-import pypdf
+import pypdfium2 as pdfium
 import sys
 
 shortform_faecher = {
@@ -71,7 +71,7 @@ file_path = "information.json"
 
 def create_faecher_dict():
     if len(sys.argv) > 1:
-        user_input = sys.argv
+        user_input = ["elem" ,"LMa1 LEn3 GGe1 GDeu6 GBi4 GSp6 Sk GGeo5 GKu1 GIf"] # sys.argv
         user_input.pop(0)
         user_input = user_input[0].split(" ")
     else:
@@ -114,6 +114,7 @@ def download_pdf(url, filename):
 
 def remove_password(input_pdf, output_pdf, password):
     reader = PdfReader(input_pdf)
+
     if reader.is_encrypted:
         reader.decrypt(password)
     writer = PdfWriter()
@@ -121,6 +122,9 @@ def remove_password(input_pdf, output_pdf, password):
         writer.add_page(page)
     with open(output_pdf, "wb") as f:
         writer.write(f)
+
+    if os.path.exists("Stundenplan.pdf"):
+        os.remove("Stundenplan.pdf")
 
     os.remove(input_pdf)
     os.rename(output_pdf, "Stundenplan.pdf")
@@ -153,46 +157,56 @@ def get_class_from_pdf(pdf_path):
         else:
             print("Invalid class. Please try again.")
 
-
 def get_correct_page(input_class_name):
-    reader = pypdf.PdfReader("Stundenplan.pdf")
+    with open("Stundenplan.pdf", "rb") as f:
+        pdf = pdfium.PdfDocument(f.read())
+    
+    for i in range(len(pdf)):
+        page = pdf.get_page(i)
+        textpage = page.get_textpage()
+        page_text = textpage.get_text_range()
+        lines = page_text.split("\n")
+        
+        if len(lines) > 5:
+            class_info = lines[4].split(" ")
+            class_name = class_info[0] if class_info else ""
 
-    for page in reader.pages:
-        text = page.extract_text()
-        lines = text.split("\n")
-        class_info = lines[4].split(" ")
+            if class_name == input_class_name:
+                print("Correct page found.")
+                return extract_text_infos(page_text)
 
-        class_name = class_info[0]
-
-        if class_name != input_class_name:
-            continue
-        else:
-            return extract_plan_infos(page)
-
-        print("failed to get correct page. Please enter your class again.")
-        get_class_from_pdf(pdf_path)
+    print("Failed to get correct page. Please enter your class again.")
+    return None
 
 
-def extract_plan_infos(page):
-    page_array = page.extract_text().split("\n")
-    page_infos = page.extract_text().split("16:40")[1]
+def extract_text_infos(page_text: str):
+    page_array = page_text.split("\r\n")
+    page_infos = page_text.split("16:40")[1]
 
     periods = page_infos.split("Block")
 
+    active_period = []
+
     for period in periods:
-        period = period.split("\n")
-        period.pop(0)
+        period_lines = period.split("\r\n")
 
-        # print("Period: ")
-        # print(period)
+        if len(period_lines) < 2:
+            continue
 
-    # 1 - 6 unnötig
-    # 7 - 36 stundenplanzeiten
+        if period_lines:
+            period_lines.pop(0) 
+            period_lines.pop(len(period_lines) - 1)
 
-    # block
-    # Raum von unten nach oben bis auf die ersten 3 Zeilen
-    # von unten nach oben Lehrer bis auf 3 und dann oben nach unten Lehrer die anderen 3
+        if not period_lines:
+            continue
 
+        # on the first iteration of this loop, append the period line to active_period
+        if not active_period:
+            active_period.append(period_lines)
+
+        rows = int(len(period_lines) / 3)   
+
+    return periods
 
 if __name__ == "__main__":
     create_faecher_dict()
