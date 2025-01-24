@@ -135,9 +135,6 @@ def get_class_from_pdf(pdf_path):
     class_number = ""
 
     while True:
-        # class_grade = input("Gib deine Klassenstufe an (7-12): ")
-        class_grade = "12"
-
         if int(class_grade) <= 10 and int(class_grade) >= 7:
             class_number = input(f"Gib deine Klassennummer an (1-7 / LM / M): ")
             break
@@ -203,6 +200,8 @@ def extract_text_infos(page_text: str):
         # on the first iteration of this loop, append the period line to active_period
         if not active_period:
             active_period.append(period_lines)
+
+        print(period_lines)
 
         rows = int(len(period_lines) / 3)   
 
