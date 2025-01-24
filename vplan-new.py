@@ -31,7 +31,7 @@ faecher = {
     "GGeo5": "Geographie",
     "GBi4": "Biologie",
     "GKu1": "Kunst",
-    "GSp6t": "Sport",
+    "GSp6": "Sport",
     "GIf": "Informatik",
     "Sk Sp": "Seminarkurs Eventmanagement",
 }
@@ -130,14 +130,15 @@ lehrer = {
 
 # Stundenplan: [Start[Hour, Minute], End[...], BreakStart[...], BreakEnd[...]]
 times = {
-  "Montag": [[7, 25], [15, 15]],
-  "Dienstag": [[8, 20], [12, 50]],
-  "Mittwoch": [[7, 25], [14, 50], [9, 50], [12, 5]],
-  "Donnerstag": [[7, 25], [12, 50], [9, 50], [12, 5]],
-  "Freitag": [[8, 20], [12, 50]],
-  "Samstag": [[7, 0], [7, 1]], # not real times but just so the program doesn't crash
-  "Sonntag": [[7, 0], [7, 1]]
+    "Montag": [[7, 25], [15, 15]],
+    "Dienstag": [[8, 20], [12, 50]],
+    "Mittwoch": [[7, 25], [14, 50], [9, 50], [12, 5]],
+    "Donnerstag": [[7, 25], [12, 50], [9, 50], [12, 5]],
+    "Freitag": [[8, 20], [12, 50]],
+    "Samstag": [[7, 0], [7, 1]],  # not real times but just so the program doesn't crash
+    "Sonntag": [[7, 0], [7, 1]],
 }
+
 
 def download_pdf(url, filename):
     if os.path.exists(filename):
@@ -186,7 +187,7 @@ def decide_pdf():
         "vplan1_dec.pdf": get_weekday_from_pdf("vplan1_dec.pdf"),
         "vplan2_dec.pdf": get_weekday_from_pdf("vplan2_dec.pdf"),
     }
-    
+
     selected_pdf = None
 
     dayEndHour = times[current_weekday][1][0]
@@ -250,96 +251,97 @@ def extract_substitution_infos(pdf_path):
 
     dayDate = ""
     weekday = ""
-    output_prompt = ""
+    changes_array = []
 
     # * splits pdf into lines and saves it in a list
     for page in reader.pages:
-      text = page.extract_text()
-      lines = text.split("\n")
-      all_lines.extend(lines)
+        text = page.extract_text()
+        lines = text.split("\n")
+        all_lines.extend(lines)
 
     # * goes through all lines and picks out the subjects i have saved in the faecher dict
     for line in all_lines:
-      if all_lines.index(line) == 3:
-        weekday = line.split(" ")[4]
-        dayDate = line.split(" ")[2]
+        if all_lines.index(line) == 3:
+            weekday = line.split(" ")[4]
+            dayDate = line.split(" ")[2]
 
-      for index, (key, subject) in enumerate(faecher.items()):
-        if key in line and " 12 " in line:
-          filtered_teachers = line.split(key)[1]
+        for index, (key, subject) in enumerate(faecher.items()):
+            if key in line and " 12 " in line:
+                filtered_teachers = line.split(key)[1]
 
-          new_teacher = filtered_teachers.split(" ")[2]
-          if new_teacher == "+":
-              new_teacher = filtered_teachers.split(" ")[1]
+                new_teacher = filtered_teachers.split(" ")[2]
+                if new_teacher == "+":
+                    new_teacher = filtered_teachers.split(" ")[1]
 
-          filtered_info = line.split(key)[2]
-          filtered_and_divided_info = filtered_info.split(" ")
+                filtered_info = line.split(key)[2]
+                filtered_and_divided_info = filtered_info.split(" ")
 
-          # * edge case where the room is splitted into two words (just these two)
-          if len(filtered_and_divided_info) > 2 and filtered_and_divided_info[1] == "zu" and filtered_and_divided_info[2] == "Hause":
-            filtered_and_divided_info[1] = "zu Hause" 
-            del filtered_and_divided_info[2]
+                # * edge case where the room is splitted into two words (just these two)
+                if (
+                    len(filtered_and_divided_info) > 2
+                    and filtered_and_divided_info[1] == "zu"
+                    and filtered_and_divided_info[2] == "Hause"
+                ):
+                    filtered_and_divided_info[1] = "zu Hause"
+                    del filtered_and_divided_info[2]
 
-          # * contains all viable information for the output prompt
-          subject = subject
-          teacher = lehrer[new_teacher]
-          room = filtered_and_divided_info[1]
-          typeOfChange = filtered_and_divided_info[2]
+                # * contains all viable information for the output prompt
+                subject = subject
+                teacher = lehrer[new_teacher]
+                room = filtered_and_divided_info[1]
+                typeOfChange = filtered_and_divided_info[2]
 
-          # * to get one flowing text, add an and if there is more than one change
-          if changes_count > 0:
-              output_prompt += " und "
+                # * increase here to keep track of how many changes there are
+                changes_count += 1
 
-          # * increase here to keep track of how many changes there are
-          changes_count += 1
+                change = ""
 
-          # * compose all output promps for different situations
-          if typeOfChange == "Vertretung" or typeOfChange == "Betreuung":
-            output_prompt += teacher + " vertritt heute " + subject
-          elif typeOfChange == "Raum-Vertretung":
-            output_prompt += subject + " findet heute in" + room
-          elif typeOfChange == "Stillarbeit":
-            output_prompt += (
-                subject + " findet heute zuhause statt (" + room + ")"
-            )
-          elif typeOfChange == "Entfall":
-            output_prompt += (
-              subject
-              + " bei "
-              + teacher
-              + " findet heute nicht statt ("
-              + room
-              + ")"
-            )
-          else:
-            output_prompt += (
-              subject
-              + " hat eine Abwandlung (" 
-              + typeOfChange 
-              + ", " 
-              + teacher 
-              + ")"
-            )
+                # * compose all output promps for different situations
+                if typeOfChange == "Vertretung" or typeOfChange == "Betreuung":
+                    change = f"{teacher} vertritt heute {subject}"
+                elif typeOfChange == "Raum-Vtr.":
+                    change = f"{subject} findet heute in {room} statt"
+                elif typeOfChange == "Stillarbeit":
+                    change = f"{subject} findet heute zuhause statt ({room})"
+                elif typeOfChange == "Entfall":
+                    change = (
+                        f"{subject} bei {teacher} findet heute nicht statt ({room})"
+                    )
+                else:
+                    change = (
+                        f"{subject} hat eine Abwandlung ({typeOfChange}, {teacher})"
+                    )
+
+                if change in changes_array:
+                    continue
+
+                changes_array.append(change)
 
     # * custom message for when there is no change
-    if output_prompt == "":
-      output_prompt = "Keine Stundenplanabwandlungen"
+    if changes_array == []:
+        changes_array.append("Keine Stundenplanabwandlungen")
+
+    # convert changes array into continuos string, seperated by commas except for the last one being seperated by " and "
+    if len(changes_array) > 1:
+        changes_array = ", ".join(changes_array[:-1]) + " und " + changes_array[-1]
+    else:
+        changes_array = changes_array[0]
 
     # * return in json format so you can get it afterwards
-    return {"substitutionPlan": output_prompt, "weekday": weekday + " der " + dayDate}
+    return {"substitutionPlan": changes_array, "weekday": weekday + " der " + dayDate}
 
 
 if __name__ == "__main__":
     # PDFs herunterladen
-  download_pdf(urls[0], "vplan1.pdf")
-  download_pdf(urls[1], "vplan2.pdf")
+    download_pdf(urls[0], "vplan1.pdf")
+    download_pdf(urls[1], "vplan2.pdf")
 
-  # Passwortschutz entfernen
-  remove_password("vplan1.pdf", "vplan1_dec.pdf", password)
-  remove_password("vplan2.pdf", "vplan2_dec.pdf", password)
+    # Passwortschutz entfernen
+    remove_password("vplan1.pdf", "vplan1_dec.pdf", password)
+    remove_password("vplan2.pdf", "vplan2_dec.pdf", password)
 
-  # PDF auswählen und speichern
-  decide_pdf()
+    # PDF auswählen und speichern
+    decide_pdf()
 
 # * formatted and ready to collect json data
 substitutionPlan = json.dumps(extract_substitution_infos(pdf_path))
