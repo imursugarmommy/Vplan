@@ -17,3 +17,5 @@
 
 ['ft', '1304', 'Sk Sp','sz', '2304', 'GGeo4'] 
 ['GGeo4', 'Sk Sp', 'ft','sz', '1304', '2304'] 
+
+python buildPlan.py "LMa1 LEn3 GGe1 GDeu6 GBi4 GSp6 Sk GGeo5 GKu1 GIf"
